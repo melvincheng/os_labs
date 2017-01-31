@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2017, <GROUP MEMBERS>
  * All rights reserved.
- * 
+ *
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,23 +27,29 @@ int main(int argc, char *argv[])
     char buffer[BUFFER_LEN] = { 0 };
     char command[BUFFER_LEN] = { 0 };
     char arg[BUFFER_LEN] = { 0 };
-
+    char *token;
     // Parse the commands provided using argc and argv
 
     // Perform an infinite loop getting command input from users
     while (fgets(buffer, BUFFER_LEN, stdin) != NULL)
     {
         // Perform string tokenization to get the command and argument
+        token = strtok(buffer, " \n");
+        strcpy(command, token);
+        printf("Command Entered: %s\n", command);
+        //printf("%lu\n", sizeof(command));
+        //printf("%lu\n", sizeof(token));
 
         // Check the command and execute the operations for each command
         // cd command -- change the current directory
         if (strcmp(command, "cd") == 0)
         {
             // your code here
+            printf("%s\n", "You typed CD");
         }
 
         // other commands here...
-        
+
         // quit command -- exit the shell
         else if (strcmp(command, "quit") == 0)
         {
