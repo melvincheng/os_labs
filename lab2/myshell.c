@@ -32,6 +32,8 @@ int main(int argc, char *argv[])
 	char PWD[BUFFER_LEN];
 	char SHELL[BUFFER_LEN];
 	char file_name[BUFFER_LEN];
+	int out = 0;
+	FILE *file;
 	strcpy(SHELL, getcwd(PWD, sizeof(PWD)));
 	// Parse the commands provided using argc and argv
 	if(argc > 0)
@@ -68,13 +70,21 @@ int main(int argc, char *argv[])
 			DIR *dir;
 			struct dirent *ent;
 			
-			if(token = strtok(NULL, " \t\n")){
-				if(strcmp(token, ">"))
+			while(token = strtok(NULL, " \t\n")){
+				if(strcmp(token, ">") == 0)
 				{
-					FILE *file;
 					strcpy(file_name, strtok(NULL, " \t\n"));
+					printf("%s\n", file_name);
 					file = fopen(file_name, "w");
-					out = true;
+					out = 1;
+					break;
+				}
+				(strcmp(token, ">>") == 0)
+				{
+					strcpy(file_name, strtok(NULL, " \t\n"));
+					printf("%s\n", file_name);
+					file = fopen(file_name, "a");
+					out = 1;
 					break;
 				}
 			}
@@ -84,7 +94,7 @@ int main(int argc, char *argv[])
 				{
 					if(out)
 					{
-						fprintf(file_name, "%s\n");
+						fprintf(file, "%s\n", ent->d_name);
 					}
 					else
 					{
@@ -92,9 +102,14 @@ int main(int argc, char *argv[])
 					}
 				}
 				fclose(file);
-				close(dir);
+				if(out)
+				{
+					close(dir);
+					out = 0;
+				}
 			}
 		}
+		// environ command
 		else if (strcmp(command, "environ") == 0)
 		{
 
