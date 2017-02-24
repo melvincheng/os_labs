@@ -11,6 +11,7 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <string.h>
+#include <dirent.h>
 #include "utility.h"
 #include "myshell.h"
 
@@ -23,44 +24,64 @@
 
 int main(int argc, char *argv[])
 {
-    // Input buffer and and commands
-    char buffer[BUFFER_LEN] = { 0 };
-    char command[BUFFER_LEN] = { 0 };
-    char arg[BUFFER_LEN] = { 0 };
-    char *token;
-    // Parse the commands provided using argc and argv
+	// Input buffer and and commands
+	char buffer[BUFFER_LEN] = { 0 };
+	char command[BUFFER_LEN] = { 0 };
+	char arg[BUFFER_LEN] = { 0 };
+	char *token;
+	char PWD[BUFFER_LEN];
+	// Parse the commands provided using argc and argv
 
-    // Perform an infinite loop getting command input from users
-    while (fgets(buffer, BUFFER_LEN, stdin) != NULL)
-    {
-        // Perform string tokenization to get the command and argument
-        token = strtok(buffer, " \n");
-        strcpy(command, token);
-        printf("Command Entered: %s\n", command);
-        //printf("%lu\n", sizeof(command));
-        //printf("%lu\n", sizeof(token));
+	// Perform an infinite loop getting command input from users
+	printf("%s ", getcwd(PWD, sizeof(PWD)));
+	while (fgets(buffer, BUFFER_LEN, stdin) != NULL)
+	{
+		// Perform string tokenization to get the command and argument
 
-        // Check the command and execute the operations for each command
-        // cd command -- change the current directory
-        if (strcmp(command, "cd") == 0)
-        {
-            // your code here
-            printf("%s\n", "You typed CD");
-        }
+		token = strtok(buffer, " \n");
+		strcpy(command, token);
+		printf("Command Entered: %s\n", command);
+		//printf("%lu\n", sizeof(command));
+		//printf("%lu\n", sizeof(token));
 
-        // other commands here...
+		// Check the command and execute the operations for each command
+		// cd command -- change the current directory
+		if (strcmp(command, "cd") == 0)
+		{
+			token = strtok(NULL, "\n");
+			chdir(token);
+			// your code here
+			printf("%s\n", "You typed cd");
+		}
+		else if (strcmp(command, "dir") == 0)
+		{
+			DIR *dir;
+			struct dirent *ent;
+			dir = opendir(".");
+			if(dir)
+			{
+				while(dir = readdir(ent))
+				{
+					printf("%s\n", dir->d_name);
+				}
+				close(dir);
+			}
+		}
 
-        // quit command -- exit the shell
-        else if (strcmp(command, "quit") == 0)
-        {
-            return EXIT_SUCCESS;
-        }
+		// other commands here...
 
-        // Unsupported command
-        else
-        {
-            fputs("Unsupported command, use help to display the manual\n", stderr);
-        }
-    }
-    return EXIT_SUCCESS;
+		// quit command -- exit the shell
+		else if (strcmp(command, "quit") == 0)
+		{
+			return EXIT_SUCCESS;
+		}
+
+		// Unsupported command
+		else
+		{
+			fputs("Unsupported command, use help to display the manual\n", stderr);
+		}
+		printf("%s ", getcwd(PWD, sizeof(PWD)));
+	}
+	return EXIT_SUCCESS;
 }
