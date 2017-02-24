@@ -15,3 +15,29 @@
 
 // Define your utility functions here, these will most likely be functions that you call
 // in your myshell.c source file
+
+extern void input_file()
+{
+	char *token;
+	token = strtok(NULL, " \t\n");
+	if(strcmp(token, "<") == 0)
+	{
+		return strtok(NULL, " \t\n");
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+extern char *output_file(char *token)
+{
+	if(strcmp(token, ">") == 0)
+	{
+		return strtok(NULL, " \t\n");
+	}
+	else
+	{
+		return NULL;
+	}
+}
