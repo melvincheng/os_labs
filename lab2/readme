@@ -1,6 +1,6 @@
 cd <directory> - Change the current directory to <directory>
 
-clr - Clear the screen.
+clr - Clears the screen.
 
 dir <directory> - List the contents of directory <directory>.
 

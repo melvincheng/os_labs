@@ -12,4 +12,9 @@
 // extern keyword such as in the following example:
 // extern void display_help(void);
 
+// function checks if ouput redirection is entered
+// returns 0 if output redirection is entered
+// returns 1 if output redirection is not entered
+extern int output_redirection(FILE **file, char *token);
+
 #endif /* UTILITY_H_ */
