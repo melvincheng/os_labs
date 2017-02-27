@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	setenv("SHELL", SHELL);
 
 	// Parse the commands provided using argc and argv
-	if(argc > 0)
+	if(argc > 1)
 	{
 		freopen(argv[1], "r", stdin);
 	}
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 		strcpy(command, "");
 
 		// outputs current working directory
-		if(argc == 0)
+		if(argc == 1)
 		{
 			printf("%s ", getenv("PWD"));
 		}
@@ -257,11 +257,25 @@ void help()
 	FILE *file;
 	int out = 1;
 	char *token;
-
+	char temp[BUFFER_LEN];
 	while((token = strtok(NULL, " \t\n")))
 	{
-		out = output_redirection(&file, token);
+		if(strcmp(token, ">"))
+		{
+			if((token = strtok(NULL, "\n")))
+			{
+				sprintf(temp, "more readme > %s", token);
+			}
+		}
+		else if(strcmp(token, ">>"))
+		{
+			if((token = strtok(NULL, "\n")))
+			{
+				sprintf(temp, "more readme >> %s", "test");
+			}
+		}
 	}
+	system("more readme");
 	if(out == 0)
 	{
 		fclose(file);
