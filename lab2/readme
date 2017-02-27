@@ -1,17 +1,137 @@
-cd <directory> - Change the current directory to <directory>
+In shell commands:
 
-clr - Clears the screen.
+	cd 
 
-dir <directory> - List the contents of directory <directory>.
+		NAME
+			cd - Changes the current directory to <directory>
 
-environ - List all the environment strings.
+		SYNOPSIS
+			cd <directory>
 
-echo <comment> - Display <comment> on the display followed by a new line (multiple spaces/tabs may be reduced to a single space).
+		DESCRIPTION 
+			Changes the current working directory to a directory specified in the argument <directory>
 
-help - Display the user manual using the more filter.
 
-pause - Pause operation of the shell until 'Enter' is pressed.
+	clr
 
-quit - Quit the shell.
+		NAME
+			clr - Clears the screen.
 
-myshell <file> - Runs the shell and executes commands from the file and exits the shell once complete
+		SYNOPSIS
+			clr
+
+		DESCRIPTION
+			Clears the screen and moves the cursor to the top left of the screen
+
+
+	dir
+
+		NAME
+			dir - Lists the contents of directory <directory>.
+
+		SYNOPSIS
+			dir <directory> 
+
+		DESCRIPTION
+			Lists all the files and directories in the directory specified in the argument <directory>
+
+
+	environ
+
+		NAME
+			environ - Lists environment strings.
+
+		SYNOPSIS
+			environ
+
+		DESCRIPTION
+			Lists all the environment variables.
+
+			SHELL
+				- The fullpath of where the shell was executed
+			PWD
+				- The fullpath of the current working directory
+
+
+	echo
+
+		NAME
+			echo - Displays a comment on the display.
+
+		SYNOPSIS
+			echo <comment>
+
+		DESCRIPTION
+			Displays the argument given <comment> on the display. Multiple spaces/tabs will be reduced to a single space.
+
+
+	help
+
+		NAME
+			help - Displays the user manual.
+
+		SYNOPSIS
+			help
+
+		DESCRIPTION
+			Displays the full readme file as the user manual. The readme contains the uses of the commands, and how to use them.
+
+
+	pause
+
+		NAME
+			pause - Pauses operation of the shell
+
+		SYNOPSIS
+			pause
+
+		DESCRIPTION
+			Pauses the operation of the shell until 'Enter' is pressed.
+
+
+	quit
+
+		NAME
+			quit - Quits the shell.
+
+		SYNOPSIS
+			quit
+
+		DESCRIPTION
+			Exits the shell program safely
+
+
+Input/Ouput redirection
+	Output redirection
+		- Instead of displaying information on the display, output redirection allows commands to write to file.
+	Input redirection
+		- Instead of typing in arguments for a command, a file can be used instead to input the commands
+
+
+	<command> <arg>? > <file>
+		- Instead of displaying the output on the display, the '>' symbol writes the output of the given command to the file <file>.
+		- This overwrite the entire file. 
+
+		This only works on the following commands:
+			- dir
+			- environ
+			- echo
+			- help
+
+	<command> <arg>? >> <file>
+		- Instead of displaying the output on the display, the '>' symbol writes the output of the given command to the file <file>.
+		- This appends to the file.
+
+		This only works on the following commands:
+			- dir
+			- environ
+			- echo
+			- help
+
+Program invocation
+	myshell
+	- Runs the shell and allows the user to input commands. See above for list of commands
+
+	myshell <file>
+	- Runs the shell and executes commands from the file and exits the shell once complete
+

@@ -18,10 +18,13 @@
 
 int output_redirection(FILE **file, char *token)
 {
+	// variable declaration
 	char file_name[256];
 
+	// checks if the token is write or append
 	if(strcmp(token, ">") == 0)
 	{
+		// if a file is not given, nothing happens
 		if((token = strtok(NULL, " \t\n")))
 		{
 			strcpy(file_name, token);
@@ -31,6 +34,7 @@ int output_redirection(FILE **file, char *token)
 	}
 	else if(strcmp(token, ">>") == 0)
 	{
+		// if a file is not given, nothing happens
 		if((token = strtok(NULL, " \t\n")))
 		{
 			strcpy(file_name, token);

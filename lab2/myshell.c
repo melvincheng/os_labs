@@ -44,10 +44,12 @@ int main(int argc, char *argv[])
 	setenv("SHELL", SHELL);
 
 	// Parse the commands provided using argc and argv
+	// if an additional argument is given, the puts all content into stdin
 	if(argc > 1)
 	{
 		freopen(argv[1], "r", stdin);
 	}
+	// if no additional arguments are given, then print the cwd along with the prompt
 	else
 	{
 		printf("%s ", getenv("PWD"));
@@ -68,10 +70,20 @@ int main(int argc, char *argv[])
 		// cd command -- change the current directory
 		if (strcmp(command, "cd") == 0)
 		{
+			// checks if the next token is NULL
+			// if so, print the current working directory
+			// if not, attempt to change the directory given
+			// if moving to directory failed, an error message is displayed
 			if((token = strtok(NULL, "\n")))
 			{
-				chdir(token);
-				setenv("PWD", getcwd(cwd, sizeof(cwd)));
+				if(chdir(token) == 0)
+				{
+					setenv("PWD", getcwd(cwd, sizeof(cwd)));
+				}
+				else
+				{
+					fprintf(stderr, "Unable to move to directory entered\n");
+				}	
 			}
 			else
 			{
@@ -81,7 +93,10 @@ int main(int argc, char *argv[])
 
 		// clr command -- clears the terminal
 		else if (strcmp(command, "clr") == 0){
-			printf("\033[2J");
+			// clears the screen by putting multiple
+			// this however, moves the cursor to the bottom left of the terminal
+			printf("\033[2J");	
+			// this then moves the cursor to the top left of the terminal
 			printf("\033[H");
 		}
 
@@ -112,6 +127,7 @@ int main(int argc, char *argv[])
 		else if (strcmp(command, "pause") == 0)
 		{
 			printf("Press the [Enter] key to continue...");
+			// a while loop until the enter key is entered
 			while(getchar() != '\n');
 		}
 
@@ -141,14 +157,22 @@ int main(int argc, char *argv[])
 // dir command
 void dir()
 {
+	// variable declartions
+	// out is used to determine if output redirection is used where 1 is false
 	FILE *file;
 	DIR *dir;
 	struct dirent *ent;
 	char *token;
 	int out = 1;
 
+	// checks if the next token is NULL 
+	// and whether or not opening the given directory is successful or not
+	// NULL check is required as opendir cannot take NULL as an argument
+	// this works because of short-circuit evaluations,
+	// if the first statement is NULL, then the second statement is not checked
 	if((token = strtok(NULL, " \n")) && (dir = opendir(token)))
 	{
+		// goes through the rest of the tokens to check if i/o redirection was entered
 		while((token = strtok(NULL, " \t\n")))
 		{
 			if(strcmp(token, ">") == 0 || strcmp(token, ">>") == 0)
@@ -156,6 +180,7 @@ void dir()
 				out = output_redirection(&file, token);
 			}
 		}
+		// reads the entries of the directory
 		while((ent = readdir(dir)))
 		{
 			if(out == 0)
@@ -167,6 +192,7 @@ void dir()
 				printf("%s\n", ent->d_name);
 			}
 		}
+		// closes the file and directory
 		if(out == 0)
 		{
 			fclose(file);
@@ -174,18 +200,23 @@ void dir()
 			out = 1;
 		}
 	}
+	// error message if directory is not given
+	// or invalid directory is given
 	else
 	{
-		printf("Unable to display directory\n");
+		fprintf(stderr, "Unable to display directory\n");
 	}
 }
 
 void environ_command()
 {
+	// variable declaration
+	// out is used to determine if output redirection is used where 1 is false
 	FILE *file;
 	int out = 1;
 	char *token;
 
+	// goes through the rest of the tokens to check if i/o redirection was entered
 	while((token = strtok(NULL, " \t\n")))
 	{
 		out = output_redirection(&file, token);
@@ -203,6 +234,7 @@ void environ_command()
 			printf("%s\n", *curr);
 		}
 	}
+	// closes the file
 	if(out == 0)
 	{
 		fclose(file);
@@ -212,14 +244,19 @@ void environ_command()
 // echo command
 void echo()
 {
+	// variable declaration
+	// out is used to determine if output redirection is used where 1 is false
 	FILE *file;
 	char temp[BUFFER_LEN][BUFFER_LEN];
 	int i = 0;
 	int out = 1;
 	char *token;
 
+	// goes through the entire first argument
 	while((token = strtok(NULL, " \t\n")))
 	{
+		// checks if i/o redirection is used
+		// if not, copy the string into the string array
 		if(strcmp(token, ">")  == 0 || strcmp(token, ">>") == 0)
 		{
 			out = output_redirection(&file, token);
@@ -229,6 +266,7 @@ void echo()
 			strcpy(temp[i++], token);
 		}
 	}
+	// outputs the message to the file or display
 	for(int j = 0; j < i; j++)
 	{
 		if(out == 0)
@@ -240,6 +278,7 @@ void echo()
 			printf("%s ", temp[j]);
 		}
 	}
+	// writes the newline and then closes the file
 	if(out == 0)
 	{
 		fprintf(file, "\n");	
@@ -252,32 +291,37 @@ void echo()
 	}
 }
 
+// help command
 void help()
 {
-	FILE *file;
-	int out = 1;
+	// variable declaration
 	char *token;
 	char temp[BUFFER_LEN];
+	char readme[BUFFER_LEN] = "more readme";
+
+	// goes through the rest of the tokens to check if i/o redirection was entered
 	while((token = strtok(NULL, " \t\n")))
 	{
-		if(strcmp(token, ">"))
+		// if i/o redirection is found, concat the string with the i/o redirection
+		if((strcmp(token, ">") == 0))
 		{
+			// if no file is given, concatenation does not occur
 			if((token = strtok(NULL, "\n")))
 			{
-				sprintf(temp, "more readme > %s", token);
+				sprintf(temp, " > %s", token);
+				strcat(readme, temp);
 			}
 		}
-		else if(strcmp(token, ">>"))
+		else if((strcmp(token, ">>") == 0))
 		{
+			// if no file is given, concatenation does not occur
 			if((token = strtok(NULL, "\n")))
 			{
-				sprintf(temp, "more readme >> %s", "test");
+				sprintf(temp, " >> %s", token);
+				strcat(readme, temp);
 			}
 		}
 	}
-	system("more readme");
-	if(out == 0)
-	{
-		fclose(file);
-	}
+	// outputs the readme
+	system(readme);
 }
