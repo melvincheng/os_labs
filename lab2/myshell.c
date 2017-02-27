@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
 	// Input buffer and and commands
 	char buffer[BUFFER_LEN] = { 0 };
 	char command[BUFFER_LEN] = { 0 };
-	char arg[BUFFER_LEN] = { 0 };
 	char *token;
 	char SHELL[BUFFER_LEN];
 	char cwd[BUFFER_LEN];
@@ -47,12 +46,13 @@ int main(int argc, char *argv[])
 	// Parse the commands provided using argc and argv
 	if(argc > 0)
 	{
-		FILE *file;
-		file = fopen(argv[0], "r");
-
+		freopen(argv[1], "r", stdin);
+	}
+	else
+	{
+		printf("%s ", getenv("PWD"));
 	}
 	// Perform an infinite loop getting command input from users
-	printf("%s ", getenv("PWD"));
 	while (fgets(buffer, BUFFER_LEN, stdin) != NULL)
 	{
 		// Perform string tokenization to get the command and argument
@@ -68,9 +68,15 @@ int main(int argc, char *argv[])
 		// cd command -- change the current directory
 		if (strcmp(command, "cd") == 0)
 		{
-			token = strtok(NULL, "\n");
-			chdir(token);
-			setenv("PWD", getcwd(cwd, sizeof(cwd)));
+			if((token = strtok(NULL, "\n")))
+			{
+				chdir(token);
+				setenv("PWD", getcwd(cwd, sizeof(cwd)));
+			}
+			else
+			{
+				printf("%s\n", getenv("PWD"));
+			}
 		}
 
 		// clr command -- clears the terminal
@@ -106,7 +112,7 @@ int main(int argc, char *argv[])
 		else if (strcmp(command, "pause") == 0)
 		{
 			printf("Press the [Enter] key to continue...");
-			while(getchar() != "\n");
+			while(getchar() != '\n');
 		}
 
 		// quit command -- exit the shell
@@ -124,7 +130,10 @@ int main(int argc, char *argv[])
 		strcpy(command, "");
 
 		// outputs current working directory
-		printf("%s ", getenv("PWD"));
+		if(argc == 0)
+		{
+			printf("%s ", getenv("PWD"));
+		}
 	}
 	return EXIT_SUCCESS;
 }
@@ -161,7 +170,7 @@ void dir()
 		if(out == 0)
 		{
 			fclose(file);
-			close(dir);
+			closedir(dir);
 			out = 1;
 		}
 	}
