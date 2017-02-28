@@ -37,11 +37,16 @@ int main(int argc, char *argv[])
 	char SHELL[BUFFER_LEN];
 	char cwd[BUFFER_LEN];
 	char path[BUFFER_LEN];
+	char exe_path[BUFFER_LEN];
+
+	// the path where the shell was executed
+	getcwd(exe_path, sizeof(exe_path));
 
 	pid_t pid = getpid();
 	sprintf(path, "/proc/%d/exe", pid);
 	readlink(path, SHELL, BUFFER_LEN);
 	setenv("SHELL", SHELL);
+
 
 	// Parse the commands provided using argc and argv
 	// if an additional argument is given, the puts all content into stdin
@@ -121,7 +126,7 @@ int main(int argc, char *argv[])
 		// help command -- displays the user manual
 		else if (strcmp(command, "help") == 0)
 		{
-			help();
+			help(exe_path);
 		}
 		// pause command -- pauses the shell until the "enter" key is pressed
 		else if (strcmp(command, "pause") == 0)
@@ -291,13 +296,18 @@ void echo()
 	}
 }
 
-// help command
-void help()
+// help command - the argument is where the shell was executed
+// this is necessary as if the user changes the directory
+// it will search for the readme in the path where the shell was executed
+void help(char *exe_path)
 {
 	// variable declaration
 	char *token;
 	char temp[BUFFER_LEN];
-	char readme[BUFFER_LEN] = "more readme";
+
+	char readme[BUFFER_LEN];
+
+	sprintf(readme, "more '%s/readme'", exe_path);
 
 	// goes through the rest of the tokens to check if i/o redirection was entered
 	while((token = strtok(NULL, " \t\n")))
