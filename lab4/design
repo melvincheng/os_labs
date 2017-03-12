@@ -1,0 +1,20 @@
+a. first fit will be used to allocate memory because its intuitive, realistic, practical, and simple to implement
+
+b. a linked list will be used to by the dispatcher for both memory allocation and queueing
+
+c. one function to read the textfile containing processes
+one function to dispatch
+one function to keep track of the programs, and change the priorities of the programs, and terminate the programs
+PROTOTYPES
+void file_read()
+void dispatch(pid_t pid)
+void track(pid_t pid)
+
+d. A multilevel dispatching scheme is used because certain programs are more crucial than other programs, therefore, priority queue are necessary.
+SHORTCOMING
+Overhead
+Possibility of starvation
+IMPROVEMENTS
+Time slice - each queue gets an amount of CPU time
+Moving processes up and down different queue
+
