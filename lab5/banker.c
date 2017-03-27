@@ -15,7 +15,7 @@
 
 // Put any other macros or constants here using #define
 // May be any values >= 0
-#define NUM_CUSTOMERS 5
+#define NUM_CUSTOMERS 2
 #define NUM_RESOURCES 3
 
 
@@ -66,7 +66,8 @@ bool safe(){
     for(int k = 0; k < NUM_CUSTOMERS; k++){
         for(int i = 0; i < NUM_CUSTOMERS; i++){
             if(!finish[i]){
-                if(finish[i] = can_allocate(i)){
+                finish[i] = can_allocate(i);
+                if(finish[i]){
                     for(int j = 0; j < NUM_RESOURCES; j++){
                         work[i] += allocation[i][j];
                     }
@@ -94,40 +95,106 @@ bool request_res(int n_customer, int request[]){
             return false;
         }
     }
-
+    // pthread_mutex_lock(&mutex);
     for(int i = 0; i < NUM_RESOURCES; i++){
         available[i] -= request[i];
         allocation[n_customer][i] += request[i];
         need[n_customer][i] -= request[i];
     }
     if(safe()){
+        // pthread_mutex_unlock(&mutex);
+        printf("System is in safe state\n");
         return true;
+    }else{
+        // pthread_mutex_unlock(&mutex);
+        printf("System is in unsafe state\n");
+        // pthread_mutex_lock(&mutex);
+        for(int i = 0; i < NUM_RESOURCES; i++){
+            available[i] += request[i];
+            allocation[n_customer][i] -= request[i];
+            need[n_customer][i] += request[i];
+        }
+        // pthread_mutex_unlock(&mutex);
+        return false;
     }
-    for(int i = 0; i < NUM_RESOURCES; i++){
-        available[i] += request[i];
-        allocation[n_customer][i] -= request[i];
-        need[n_customer][i] += request[i];
-    }
-    return true;
 }
 
 // Release resources, returns true if successful
 bool release_res(int n_customer, int release[]){
+    printf("Thread %d releasing: ", n_customer);
+    // pthread_mutex_lock(&mutex);
     for(int i = 0; i < NUM_RESOURCES; i++){
+        printf("%d ", release[i]);
         allocation[n_customer][i] -= release[i];
+        available[i] += release[i];
+        need[n_customer][i] += release[i];
     }
+    printf("\n");
+    // pthread_mutex_unlock(&mutex);
     return true;
 }
 
 void * thread(void * arg){
     bool request;
-    pthread_t pid;
-    pid = pthread_self();
-    printf("%lu\n", pid);
-    // while(true){
-    //     request = request_res();
-        
-    // }
+    int id = (int) arg;
+    int req_resource[NUM_RESOURCES];
+    int rel_resource[NUM_RESOURCES];
+    int ran_num;
+    while(true){
+        sleep(1);
+        printf("Available: ");
+        for(int i = 0; i < NUM_RESOURCES; i++){
+            printf("%d ", available[i]);
+        }    
+
+        printf("\nNeed: \n");
+        for(int j = 0; j <NUM_CUSTOMERS; j++){
+            printf("Thread %d: ", j);
+            for(int i = 0; i < NUM_RESOURCES; i++){
+                printf("%d ", need[j][i]);
+            }
+            printf("\n");
+        }
+
+        printf("\nAllocated: \n");
+        for(int j = 0; j <NUM_CUSTOMERS; j++){
+            printf("Thread %d: ", j);
+            for(int i = 0; i < NUM_RESOURCES; i++){
+                printf("%d ", allocation[j][i]);
+            }
+            printf("\n");
+        }
+        printf("Thread %d requesting: ", id);
+        for(int i = 0; i < NUM_RESOURCES; i++){
+            if(need[id][i] == 0){
+                req_resource[i] = 0;
+            }else{
+                req_resource[i] = rand() % (need[id][i]) + 1;
+            }
+            printf("%d ", req_resource[i]);
+        }
+        printf("\n");
+        pthread_mutex_lock(&mutex);
+        request = request_res(id, req_resource);
+        pthread_mutex_unlock(&mutex);
+        if(request){
+            printf("Request granted.\n");
+        }else{
+            printf("Request denied.\n");
+        }
+        for(int i = 0; i < NUM_RESOURCES; i++){
+            if(allocation[id][i] == 0){
+                rel_resource[i] = 0;
+            }else{
+                rel_resource[i] = rand() % (allocation[id][i]) + 1;
+            }
+        }
+        printf("\n");
+        pthread_mutex_lock(&mutex);
+        release_res(id, rel_resource);
+        pthread_mutex_unlock(&mutex);
+    }
+    pthread_exit(NULL);
 }
 
 
@@ -150,27 +217,57 @@ int main(int argc, char *argv[]){
     // If you are having issues try and limit the number of threads (NUM_CUSTOMERS)
     // to just 2 and focus on getting the multithreading working for just two threads
 
-    pthread_t pid[NUM_CUSTOMERS];
+    pthread_t tid[NUM_CUSTOMERS];
+    pthread_attr_t attr;
+    int error;
 
     pthread_mutex_init(&mutex, NULL);
 
+    pthread_attr_init(&attr);
+
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
     for(int i = 0; i < NUM_RESOURCES; i++){
         available[i] = atoi(argv[i+1]);
-        for(int j = 0; j < NUM_RESOURCES; j++){
-            maximum[j][i] = rand() % atoi(argv[i+1]);
+        for(int j = 0; j < NUM_CUSTOMERS; j++){
+            maximum[j][i] = rand() % (atoi(argv[i+1]) - 1) + 1;
             allocation[j][i] = 0;
-            need[j][i] = 0;
+            need[j][i] = maximum[j][i];
+        }
+    }
+    printf("Available: ");
+    for(int i = 0; i < NUM_RESOURCES; i++){
+        printf("%d ", available[i]);
+    }    
+
+    printf("\nMaximum: \n");
+    for(int j = 0; j <NUM_CUSTOMERS; j++){
+        printf("Thread %d: ", j);
+        for(int i = 0; i < NUM_RESOURCES; i++){
+            printf("%d ", maximum[j][i]);
+        }
+        printf("\n");
+    }
+
+    for(int i = 0; i < NUM_CUSTOMERS; i++){
+        error = pthread_create(&tid[i], &attr, thread, (void*) i);
+        if(error){
+            printf("Error creating thread %d: %d\n", i, error);
+            exit(-1);
         }
     }
 
     for(int i = 0; i < NUM_CUSTOMERS; i++){
-        pthread_create(&pid[i], NULL, thread, NULL);
+        error = pthread_join(tid[i], NULL);
+        if(error){
+            printf("Error joining thread %d: %d\n", i, error);
+            exit(-1);
+        }
     }
+    pthread_attr_destroy(&attr);
+    pthread_mutex_destroy(&mutex);
 
-    for(int i = 0; i < NUM_CUSTOMERS; i++){
-        pthread_join(pid[i], NULL);
-    }
-
+    pthread_exit(NULL);
 
     return EXIT_SUCCESS;
 }
